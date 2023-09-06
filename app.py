@@ -158,15 +158,7 @@ def upload_today_files(client):
         upload_file(file, client)
 
 
-buckets = list_buckets(s3_client)
-objects = list_objects(s3_client)
-
-pkr_files = organize_files(directory)
-pkr_today_files = organize_today_files(directory)
-print(len(pkr_today_files))
-print(len(pkr_files))
-f = pkr_files[50]
-
-print(check_file_exists(s3_client, f))
-
-# upload_files(pkr_files, s3_client)
+@app.post("/upload-today-files/")
+def upload_today_files_to_s3():
+    upload_today_files(s3_client)
+    return {"message": "Files uploaded successfully"}
