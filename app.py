@@ -21,13 +21,6 @@ s3_client = boto3.client('s3',
 def read_root():
     return {"Hello": "World"}
 
-
-@app.post("/process-files/")
-def process_files():
-    # Logique pour traiter et télécharger les fichiers
-    pass
-
-
 def get_files(directory_path: str):
     pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})_(?P<tournament_name>.+)\((?P<tournament_id>\d+)\)_real_holdem_no-limit(?:_summary)?(?:_1)?\.txt"
     files = []
