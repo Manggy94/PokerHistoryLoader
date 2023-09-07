@@ -118,9 +118,9 @@ def upload_file(file: dict, client):
     )
 
 
-def upload_files(files: list, client):
+def upload_files(files: list, client, force_upload: bool = False):
     for file in files:
-        if not check_file_exists(client, file):
+        if force_upload or not check_file_exists(client, file):
             upload_file(file, client)
 
 
