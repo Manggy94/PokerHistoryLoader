@@ -112,7 +112,7 @@ def upload_file(file: dict, client):
                 'tournament_name': file["file_info"]["tournament_name"],
                 'tournament_id': file["file_info"]["tournament_id"],
                 'file_type': file["file_info"]["file_type"],
-                'date': file["file_info"]["date"]
+                'date': file["file_info"]["date"].isoformat()
             }
         }
     )
