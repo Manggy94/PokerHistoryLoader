@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 import os
 import boto3
 import re
@@ -100,7 +100,22 @@ def organize_today_files(directory_path: str):
 
 def upload_file(file: dict, client):
     bucket_name = 'manggy-poker'
-    client.upload_file(file["local_path"], bucket_name, file["s3_path"])
+    client.upload_file(
+        file["local_path"],
+        bucket_name,
+        file["s3_path"],
+        ExtraArgs={
+            'Metadata': {
+                'year': file["file_info"]["year"],
+                'month': file["file_info"]["month"],
+                'day': file["file_info"]["day"],
+                'tournament_name': file["file_info"]["tournament_name"],
+                'tournament_id': file["file_info"]["tournament_id"],
+                'file_type': file["file_info"]["file_type"],
+                'date': file["file_info"]["date"]
+            }
+        }
+    )
 
 
 def upload_files(files: list, client):
