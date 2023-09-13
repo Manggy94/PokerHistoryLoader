@@ -1,7 +1,7 @@
-from app import s3_client, upload_today_files
-
+from loader import S3Uploader
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    upload_today_files(s3_client)
+    uploader = S3Uploader()
+    uploader.upload_today_files(force_upload=True)
 

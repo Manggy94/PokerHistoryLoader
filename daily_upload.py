@@ -1,12 +1,7 @@
-from app import upload_files, organize_files, directory, s3_client
-
-
-def upload_directory():
-    client = s3_client
-    files = organize_files(directory)
-    upload_files(files, client, force_upload=True)
-
+import datetime
+from loader import S3Uploader
 
 if __name__ == '__main__':
-    print(f"Uploading data from {directory}")
-    upload_directory()
+    uploader = S3Uploader()
+    year = datetime.date.today().year
+    uploader.upload_files_since(datetime.date(year=year, month=1, day=1), force_upload=True)
