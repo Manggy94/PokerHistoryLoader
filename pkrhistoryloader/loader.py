@@ -1,4 +1,6 @@
 import datetime
+import threading
+
 import boto3
 import os
 import re
@@ -126,7 +128,7 @@ class S3Uploader:
         """
         return [file for file in self.organized_files if file["file_info"]["date"] == date]
 
-    def upload_file(self, file: dict, bucket_name: str = "manggy-poker"):
+    def upload_file(self, file: dict):
         """
         Upload a file to the bucket
         """
@@ -145,7 +147,8 @@ class S3Uploader:
                 }
             })
 
-    def check_file_exists(self, file: dict, bucket_name: str = "manggy-poker"):
+
+    def check_file_exists(self, file: dict):
         """
         Check if a file exists in the bucket
         """
@@ -155,17 +158,29 @@ class S3Uploader:
         """
         Upload files to the bucket
         """
+        threads = []
         for file in self.organized_files:
             if force_upload or not self.check_file_exists(file):
-                self.upload_file(file)
+                thread = threading.Thread(target=self.upload_file, args=(file,))
+                thread.start()
+                threads.append(thread)
+        for thread in threads:
+            thread.join()
+
+
 
     def upload_today_files(self, force_upload: bool = True):
         """
         Upload files of the day to the bucket
         """
+        threads = []
         for file in self.organize_by_date(datetime.date.today()):
             if force_upload or not self.check_file_exists(file):
-                self.upload_file(file)
+                thread = threading.Thread(target=self.upload_file, args=(file,))
+                thread.start()
+                threads.append(thread)
+        for thread in threads:
+            thread.join()
 
     def dates_since(self, date: datetime.date):
         """
@@ -190,6 +205,5 @@ class S3Uploader:
         """
         for date in self.dates_since(date):
             for file in self.organize_by_date(date):
-                print(file)
                 if force_upload or not self.check_file_exists(file):
                     self.upload_file(file)
