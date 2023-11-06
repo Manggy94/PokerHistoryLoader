@@ -1,5 +1,6 @@
 from pathlib import Path
 from setuptools import setup, find_packages
+import json
 
 install_requires = [
     "boto3",
@@ -18,9 +19,16 @@ classifiers = [
     "Topic :: Games/Entertainment :: Board Games"
 ]
 
+
+def get_version():
+    with open("version.json", "r") as f:
+        version = json.load(f)
+        return f"{version['major']}.{version['minor']}.{version['patch']}"
+
+
 setup(
     name="pkrhistoryloader",
-    version="0.0.1",
+    version=get_version(),
     description="A Poker Package to load poker history files in DO S3 bucket",
     long_description=Path("README.md").read_text(),
     long_description_content_type='text/markdown',
