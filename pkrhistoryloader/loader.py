@@ -170,9 +170,9 @@ class S3Uploader:
             ExtraArgs={
                 'ACL': 'public-read',
                 'Metadata': {
-                    'year': file["file_info"]["year"],
-                    'month': file["file_info"]["month"],
-                    'day': file["file_info"]["day"],
+                    'year': f'{file["file_info"]["year"]:04}',
+                    'month': f'{file["file_info"]["month"]:02}',
+                    'day': f'{file["file_info"]["day"]:02}',
                     'tournament_id': file["file_info"]["tournament_id"],
                     'file_type': file["file_info"]["file_type"],
                     'date': file["file_info"]["date"].isoformat()
