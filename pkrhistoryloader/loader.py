@@ -1,11 +1,11 @@
 import datetime
 import threading
-
 import boto3
 import os
 import re
 import dotenv
 from functools import cached_property
+from watchdog.events import FileSystemEventHandler
 
 dotenv.load_dotenv()
 
@@ -25,14 +25,16 @@ def dates_since(date: datetime.date) -> list:
     return dates
 
 
-class S3Uploader:
+class S3Uploader(FileSystemEventHandler):
     """
     A class to upload Hand history files to S3 bucket
     """
 
     def __init__(self,
                  directory: str = r'C:/Users/mangg/AppData/Local/PokerTracker 4/Processed/Winamax',
-                 bucket_name: str = "manggy-poker"):
+                 bucket_name: str = "manggy-poker",
+                 processing_directory: str = r'C:/Users/mangg/AppData/Roaming\winamax\documents\accounts\manggy94\history',
+                 ):
         """
         Constructor
         :param directory: The local directory where the files are stored
@@ -47,6 +49,7 @@ class S3Uploader:
         )
         self.bucket = self.s3.Bucket(bucket_name)
         self.directory = directory
+        self.processing_directory = processing_directory
         self.pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})_(?P<tournament_name>.+)\((?P<tournament_id>\d+)\)_real_holdem_no-limit(?:_summary)?(?:_1)?\.txt"
 
     def get_local_files(self) -> list:
@@ -115,6 +118,21 @@ class S3Uploader:
             path = f"data/histories/raw/{file_info['year']:04}/{file_info['month']:02}/{file_info['day']:02}/" \
                    f"{file_info['tournament_id']}_{file_info['tournament_name']}_history.txt"
         return path
+
+    def set_file_dict(self, file_path: str) -> dict:
+        """
+        Set the file dict
+        :param file_name: The name of the file
+        :return: A dict with file_info, s3_path and local_path
+        """
+        file_name = os.path.basename(file_path)
+        file_info = self.extract_file_info(file_name)
+        path = self.create_path(file_info)
+        return {
+            "file_info": file_info,
+            "s3_path": path,
+            "local_path": file_path
+        }
 
     @cached_property
     def organized_files(self) -> list:
@@ -218,11 +236,32 @@ class S3Uploader:
     def upload_files_since(self, date: datetime.date, force_upload: bool = True):
         """
         Upload files since a date
-        :param date:
-        :param force_upload:
+        :param date: The date since which the files will be uploaded
+        :param force_upload: If True, upload all the files, even if they already exist in the bucket
         :return:
         """
         for date in dates_since(date):
             for file in self.organize_by_date(date):
                 if force_upload or not self.check_file_exists(file):
                     self.upload_file(file)
+
+    def on_created(self, event):
+        """
+        Upload a file when it is created
+        :param event: The event of the file creation
+        """
+        file = event.src_path
+        print(f"New hand history file observed at {event.src_path}")
+        file_dict = self.set_file_dict(file)
+        if file_dict:
+            self.upload_file(file_dict)
+
+    def on_modified(self, event):
+        """
+        Upload a file when it is modified
+        :param event: The event of the file modification
+        """
+        file = event.src_path
+        file_dict = self.set_file_dict(file)
+        if file_dict:
+            self.upload_file(file_dict)

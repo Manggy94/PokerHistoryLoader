@@ -1,6 +1,8 @@
 from unittest import TestCase
 from pkrhistoryloader.loader import S3Uploader
 import datetime
+import os
+
 
 class TestS3Uploader(TestCase):
     """
@@ -12,6 +14,7 @@ class TestS3Uploader(TestCase):
         Set up the test
         """
         self.s3_uploader = S3Uploader()
+        self.test_file = "C:/Users/mangg/AppData/Local/PokerTracker 4/Processed/Winamax/2023/11/11-07/20231107_Hit&Run Ticket 1€(706224402)_real_holdem_no-limit_summary.txt"
 
     def test_s3_connection(self):
         """
@@ -81,6 +84,17 @@ class TestS3Uploader(TestCase):
         self.assertIsInstance(path2, str)
         self.assertNotEqual(path, path2)
         self.assertEqual(path2, "data/histories/raw/2024/04/31/987654321_Test_history.txt")
+
+    def test_set_file_dict(self):
+        """
+        Test the set_file_dict method
+        """
+
+        print(self.test_file)
+        print(self.s3_uploader.extract_file_info(self.test_file))
+        for dirpath, _, filenames in os.walk(self.s3_uploader.directory):
+            print(filenames)
+
 
     def test_organized_files(self):
         """
